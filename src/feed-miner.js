@@ -178,11 +178,13 @@ subTask = function(lastfeed) {
       console.log("task: " + lastfeed.config.id);
       (yield lastfeedTask(lastfeed));
       console.log("sleep 5s");
-      results.push((yield sleep(5000)));
+      results.push((yield sleep(60000)));
     }
     return results;
   }).then(function(c) {
-    return console.log("then");
+    return console.log("sub then");
+  })["catch"](function(err) {
+    return console.log(err);
   });
 };
 
@@ -196,4 +198,8 @@ co(function*() {
     results.push(subTask(lastfeed));
   }
   return results;
+}).then(function(c) {
+  return console.log("main then");
+})["catch"](function(err) {
+  return console.log(err);
 });

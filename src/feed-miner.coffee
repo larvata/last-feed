@@ -187,10 +187,13 @@ subTask = (lastfeed)->
       yield lastfeedTask(lastfeed)
 
       console.log "sleep 5s"
-      yield sleep(5000)
+      yield sleep(60000)
 
   .then (c)->
-    console.log "then"
+    console.log "sub then"
+
+  .catch (err)->
+    console.log err
 
 
 
@@ -205,3 +208,9 @@ co ()->
     # console.log configs
     lastfeed= new Lastfeed(c)
     subTask(lastfeed)
+
+.then (c)->
+  console.log "main then"
+
+.catch (err)->
+  console.log err

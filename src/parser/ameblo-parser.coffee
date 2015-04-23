@@ -7,5 +7,5 @@ module.exports.parse=(html)->
     decodeEntities: false
 
   $=cheerio.load(html,cheerioOptions)
-  post = $('.articleText').html()
+  post = $('#main').html()
   return post
