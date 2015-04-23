@@ -1,0 +1,16 @@
+doctype xml
+rss(xmlns:atom='http://www.w3.org/2005/Atom' version='2.0')
+  channel
+    title #{meta.title}
+    link #{meta.link}
+    description #{meta.description}
+    language jp
+
+    each article in articles
+      item
+        title= article.title
+        description= article.description
+        link=article.link
+        pubDate=article.pubDate
+
+

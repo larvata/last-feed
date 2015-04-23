@@ -1,0 +1,17 @@
+ ☐ 缓存策略
+   ☐ 方案一: 缓存已经加载过的post
+     数据结构使用 LIST
+     postlistKey格式 "post:cached:{provider}"
+     插入缓存 LPUSH postlistKey post
+     删除旧项目 LTRIM postlistKey 0 9
+     获取 LRANGE postlistKey 0 -1
+     Pro:
+       删除旧项目方便
+     Con:
+       判定缓存中存在项困难 需要用结构包裹post正文数据并且加载后才能识别
+   ☐ 方案二: feed有变动后 重新抓取post
+     Pro:
+       不需要额外对post缓存 抓取数据后 直接缓存有全文的feed
+       实现方便
+     Con:
+       feed更新后 重新抓取 开销未知
