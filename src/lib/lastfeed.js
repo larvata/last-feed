@@ -15,9 +15,6 @@ Lastfeed = (function() {
   };
 
   Lastfeed.prototype.getFeedRawKey = function() {
-    "feed:raw:" + this.config.id;
-    console.log("1212sss");
-    console.log("feed:raw:" + this.config.id);
     return "feed:raw:" + this.config.id;
   };
 

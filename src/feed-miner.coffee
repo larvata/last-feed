@@ -7,7 +7,7 @@ coreq=require 'co-request'
 
 cheerio= require 'cheerio'
 
-
+sleep= require 'co-sleep'
 redis= require('redis')
 client = redis.createClient()
 monitor = redis.createClient()
@@ -19,18 +19,18 @@ parser= require('./parser')
 
 
 # global variable
-configs=null
+# configs=null
 
 
 # monitor
-monitor.psubscribe '*config:*'
-monitor.on 'pmessage', (pattern, channel, message) ->
-  if message not in ['del','set']
-    return
+# monitor.psubscribe '*config:*'
+# monitor.on 'pmessage', (pattern, channel, message) ->
+#   if message not in ['del','set']
+#     return
 
-  console.log message
-  console.log channel
-  console.log configs
+#   console.log message
+#   console.log channel
+#   console.log configs
 
 
 
@@ -70,10 +70,7 @@ loadConfiguation=()->
   return configs
 
 setCachedFeed=(cacheKey,feedText)->
-  console.log "caching..."
-
-  console.log cacheKey
-
+  console.log "caching: #{cacheKey}"
   client.set cacheKey,feedText
 
 checkFeedUpdates=(lastfeed)->
@@ -82,10 +79,7 @@ checkFeedUpdates=(lastfeed)->
 
   promiseGetCachedRawFeed=(lastfeed)->
     new Promise (resolve,reject)->
-      console.log "111"
-      console.log lastfeed
       feedKey=lastfeed.getFeedRawKey()
-      console.log feedKey
 
       client.get feedKey,(err,reply)->
         if err?
@@ -96,12 +90,13 @@ checkFeedUpdates=(lastfeed)->
 
   promiseGetFeed=(lastfeed)->
     new Promise (resolve,reject)->
-      console.log "1"
+
       url=lastfeed.config.url
+
+      console.log "request feed: #{url}"
       req=request(url)
       feedparser=new FeedParser()
 
-      console.log "2"
       feed={}
       feed.meta=null
       feed.articles=[]
@@ -128,17 +123,16 @@ checkFeedUpdates=(lastfeed)->
       feedparser.on 'end',()->
         resolve feed
 
-      console.log "3"
-
 
   feed=yield promiseGetFeed(lastfeed)
-  console.log 5
 
   feedText=JSON.stringify(feed)
-  console.log "12"
   cachedFeedText=yield promiseGetCachedRawFeed(lastfeed)
 
-  console.log 6
+
+  fs.writeFileSync './cached.json',cachedFeedText
+
+  fs.writeFileSync './response.json',feedText
   if cachedFeedText is feedText
     feedUpdated=false
   else
@@ -160,63 +154,54 @@ completeFeedPosts=(lastfeed)->
     postText = parser.ameblo.parse(resp.body)
     article.description=postText
 
-  console.log "cache feed"
   feedCacheString=JSON.stringify(lastfeed.feed)
-  # console.log feedCacheString
   setCachedFeed(lastfeed.getFeedCacheKey(),feedCacheString)
-
-
-  console.log "cached"
 
 
 lastfeedTask=(lastfeed)->
 
   value = yield checkFeedUpdates(lastfeed)
-  # console.log value
   lastfeed.feed=value.feed
-  lastfeed.rawfeed=value.feed
   lastfeed.feedUpdated=value.feedUpdated
 
 
+  rawFeedText=JSON.stringify(lastfeed.feed)
 
-  # console.log lastfeed.feed
+  console.log "feed updated: #{lastfeed.feedUpdated}"
+
 
   if lastfeed.feedUpdated
-    console.log "try cache to file"
+
     value= yield completeFeedPosts(lastfeed)
-
-    console.log "set raw cache"
-    feedText=JSON.stringify(lastfeed.rawfeed)
-    setCachedFeed(lastfeed.getFeedRawKey(),feedText)
-
-    console.log "completeFeedPosts: #{value}"
+    setCachedFeed(lastfeed.getFeedRawKey(),rawFeedText)
+    console.log "completeFeedPosts"
 
   return lastfeed
+
+
+subTask = (lastfeed)->
+  co ()->
+    while true
+
+      console.log "task: #{lastfeed.config.id}"
+      yield lastfeedTask(lastfeed)
+
+      console.log "sleep 5s"
+      yield sleep(5000)
+
+  .then (c)->
+    console.log "then"
+
+
 
 
 
 co ()->
-  # init
-
+  # main task
   configs = yield loadConfiguation()
 
-  # lastfeeds=[]
-  # for c in configs
-  #   lastfeeds.push new Lastfeed(c)
-
-  lastfeed=new Lastfeed(configs[0])
-
-  lastfeed = yield lastfeedTask(lastfeed)
-
-  return lastfeed
-
-.then (lastfeed)->
-  # parse feed
-  console.log "fin"
-  console.log "feedUpdated: #{lastfeed}"
-  client.end()
-
-
-,(error)->
-  console.log error
-  console.log "error on parse fedd"
+  # init configs
+  for c in configs
+    # console.log configs
+    lastfeed= new Lastfeed(c)
+    subTask(lastfeed)

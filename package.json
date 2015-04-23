@@ -13,6 +13,7 @@
     "co": "^4.5.2",
     "co-body": "^1.1.0",
     "co-request": "^0.2.1",
+    "co-sleep": "0.0.1",
     "co-views": "^0.3.0",
     "feedparser": "^1.0.1",
     "jade": "^1.9.2",

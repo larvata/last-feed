@@ -14,10 +14,10 @@ class Lastfeed
 
   getFeedRawKey:()->
 
+    # "feed:raw:#{@config.id}"
+    # console.log "1212sss"
+    # console.log "feed:raw:#{@config.id}"
     "feed:raw:#{@config.id}"
-    console.log "1212sss"
-    console.log "feed:raw:#{@config.id}"
-    return "feed:raw:#{@config.id}"
 
   # task:null
 
