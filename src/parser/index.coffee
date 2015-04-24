@@ -1,4 +1,6 @@
 ameblo=require './ameblo-parser'
+blogspot = require './blogspot-parser'
+dotblogs = require './dotblogs-parser'
 
 
-module.exports.ameblo=ameblo
+module.exports=[ameblo,blogspot,dotblogs]

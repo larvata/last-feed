@@ -1,0 +1,5 @@
+ ☐ 合并 web-server 和 feed-miner
+
+ ☐ 完成web前端 feed配置页面
+
+ ☐ feed-miner 支持redis改动侦听 实现运行中修改 feed config

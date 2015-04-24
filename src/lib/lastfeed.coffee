@@ -1,32 +1,28 @@
+url = require 'url'
+parsers= require('../parser')
+
+providerIdMatch =(parserId,providerId)->
+  providerId.indexOf(parserId, providerId.length - parserId.length) isnt -1
 
 class Lastfeed
   constructor: (@config) ->
 
-
-  getConfigKey:()->
-
-    "config:#{@config.id}"
-
-  getFeedCacheKey:()->
-
-    "feed:cache:#{@config.id}"
+    @providerId = url.parse(@config.url).host
+    @feedId= @config.url.replace(/^http:\/\//,'').replace(/[\/|\.]/g,'-')
+    @feedCacheKey="feed:cache:#{@feedId}"
+    @feedRawKey="feed:raw:#{@feedId}"
+    @feedConfigKey="config:#{@feedId}"
 
 
-  getFeedRawKey:()->
+    @parser = null
+    for parser in parsers
+      if providerIdMatch(parser.id,@providerId)
+        @parser= parser
+        break
 
-    # "feed:raw:#{@config.id}"
-    # console.log "1212sss"
-    # console.log "feed:raw:#{@config.id}"
-    "feed:raw:#{@config.id}"
-
-  # task:null
-
-  # startTask:()->
-
-
-  # updateConfig:(@config)->
-
-
+    if parser is null
+      throw new Error("Cant found parser for #{@providerId}")
+    # console.log @parser
 
 module.exports=Lastfeed
 

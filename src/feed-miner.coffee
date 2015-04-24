@@ -1,4 +1,6 @@
 request = require 'request'
+Agent= require 'socks5-http-client/lib/Agent'
+
 FeedParser = require 'feedparser'
 co = require 'co'
 
@@ -14,7 +16,7 @@ monitor = redis.createClient()
 
 Lastfeed= require('./lib/lastfeed')
 
-parser= require('./parser')
+
 
 
 
@@ -79,7 +81,7 @@ checkFeedUpdates=(lastfeed)->
 
   promiseGetCachedRawFeed=(lastfeed)->
     new Promise (resolve,reject)->
-      feedKey=lastfeed.getFeedRawKey()
+      feedKey=lastfeed.feedRawKey
 
       client.get feedKey,(err,reply)->
         if err?
@@ -94,6 +96,14 @@ checkFeedUpdates=(lastfeed)->
       url=lastfeed.config.url
 
       console.log "request feed: #{url}"
+
+      # options=
+      #   url:url
+      #   agentClass: Agent
+      #   agentOptions:
+      #     socksHost: '127.0.0.1'
+      #     socksPort: 8787
+
       req=request(url)
       feedparser=new FeedParser()
 
@@ -143,19 +153,63 @@ checkFeedUpdates=(lastfeed)->
   }
 
 
+
+# promiseGetArticle=(url)->
+#   new Promise (resolve,reject)->
+#     console.log "request article: #{url}"
+
+#     options=
+#       url:url
+#       agentClass: Agent
+#       agentOptions:
+#         socksHost: '127.0.0.1'
+#         socksPort: 8787
+
+#     request options,(err,resp)->
+#       if err?
+#         reject err
+#       else if resp.statusCode isnt 200
+#         reject new Error("error on request: #{resp.statusCode}")
+#       else
+#         resolve resp
+
+
+
+
+
 completeFeedPosts=(lastfeed)->
+
   for article in lastfeed.feed.articles
 
     postUrl=article.link
     console.log postUrl
 
+    # options=
+    #   url:postUrl
+    #   agentClass: Agent
+    #   agentOptions:
+    #     socksHost: '127.0.0.1'
+    #     socksPort: 8787
+
+    # console.log "try get article"
     resp=yield coreq(postUrl)
 
-    postText = parser.ameblo.parse(resp.body)
+    # resp=yield promiseGetArticle(postUrl)
+
+    # console.log resp
+
+    # parser=getParserByProviderId(lastfeed.providerId)
+    # console.log "provider Id: #{lastfeed.providerId}"
+    # console.log "parser"
+    # console.log parser
+
+    postText = lastfeed.parser.parse(resp.body)
+    # fs.writeFileSync "./posttext.html",postText
     article.description=postText
 
   feedCacheString=JSON.stringify(lastfeed.feed)
-  setCachedFeed(lastfeed.getFeedCacheKey(),feedCacheString)
+  setCachedFeed(lastfeed.feedCacheKey,feedCacheString)
+  fs.writeFileSync "./posttext.html",feedCacheString
 
 
 lastfeedTask=(lastfeed)->
@@ -173,7 +227,7 @@ lastfeedTask=(lastfeed)->
   if lastfeed.feedUpdated
 
     value= yield completeFeedPosts(lastfeed)
-    setCachedFeed(lastfeed.getFeedRawKey(),rawFeedText)
+    setCachedFeed(lastfeed.feedRawKey,rawFeedText)
     console.log "completeFeedPosts"
 
   return lastfeed
@@ -183,11 +237,14 @@ subTask = (lastfeed)->
   co ()->
     while true
 
-      console.log "task: #{lastfeed.config.id}"
+      console.log ""
+      console.log "task: #{lastfeed.feedId}"
+      console.log "parser: #{lastfeed.parser.id}"
+
       yield lastfeedTask(lastfeed)
 
-      console.log "sleep 5s"
-      yield sleep(60000)
+      console.log "sleep #{lastfeed.config.interval}: #{lastfeed.feedId}"
+      yield sleep(lastfeed.config.interval)
 
   .then (c)->
     console.log "sub then"

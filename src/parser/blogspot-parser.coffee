@@ -7,7 +7,10 @@ module.exports.parse=(html)->
     decodeEntities: false
 
   $=cheerio.load(html,cheerioOptions)
-  post = $('.articleText').html()
+  target = $('.post-body')
+  target.children().last().remove()
+
+  post=target.html()
   return post
 
-module.exports.id='ameba.jp'
+module.exports.id='blogspot.com'

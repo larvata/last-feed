@@ -11,8 +11,8 @@ module.exports.parse = function(html) {
     decodeEntities: false
   };
   $ = cheerio.load(html, cheerioOptions);
-  post = $('.articleText').html();
+  post = $('#entrybody').html();
   return post;
 };
 
-module.exports.id = 'ameba.jp';
+module.exports.id = 'dotblogs.com.tw';

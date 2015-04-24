@@ -4,15 +4,17 @@ var cheerio;
 cheerio = require('cheerio');
 
 module.exports.parse = function(html) {
-  var $, cheerioOptions, post;
+  var $, cheerioOptions, post, target;
   cheerioOptions = {
     normalizeWhitespace: false,
     xmlMode: false,
     decodeEntities: false
   };
   $ = cheerio.load(html, cheerioOptions);
-  post = $('.articleText').html();
+  target = $('.post-body');
+  target.children().last().remove();
+  post = target.html();
   return post;
 };
 
-module.exports.id = 'ameba.jp';
+module.exports.id = 'blogspot.com';

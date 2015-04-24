@@ -1,27 +1,41 @@
 parse = require 'co-body'
-client = require('redis').createClient()
+
+wrapper= require 'co-redis'
+client = wrapper(require('redis').createClient())
 
 views = require 'co-views'
 fs= require 'mz/fs'
 
 Lastfeed= require('../lib/lastfeed')
 
+validator = require 'validator'
 
-getFeedByProviderId=(pid)->
-  new Promise (resolve,reject)->
-    pid = "feed:cache:#{pid}"
-    client.get pid,(err,reply)->
-      if err?
-        reject err
-      else
-        if reply?
-          try
-            feed = JSON.parse(reply)
-            resolve feed
-          catch e
-            reject e
-        else
-          reject new Error("Unexpected pid: #{pid}")
+
+# getFeedByProviderId=(pid)->
+#   new Promise (resolve,reject)->
+#     pid = "feed:cache:#{pid}"
+#     client.get pid,(err,reply)->
+#       if err?
+#         reject err
+#       else
+#         if reply?
+#           try
+#             feed = JSON.parse(reply)
+#             resolve feed
+#           catch e
+#             reject e
+#         else
+#           reject new Error("Unexpected pid: #{pid}")
+
+getFeedByFeedId=(fid)->
+  fid="feed:cache:#{fid}"
+  value=yield client.get(fid)
+
+  try
+    feed= JSON.parse(value)
+    return feed
+  catch e
+    throw new Error("failed parse feed")
 
 
 render= views(__dirname+'/../feedTemplate/',{
@@ -33,22 +47,42 @@ module.exports.add = (next)->
   yield next if 'POST' isnt @method
 
   config = yield parse.form(@)
-  config.id=config.url.replace(/^http:\/\//,'').replace(/[\/|\.]/g,'-')
+  # config.id=config.url.replace(/^http:\/\//,'').replace(/[\/|\.]/g,'-')
+
+  if not validator.isURL(config.url)
+    # Unprocessable Entity
+    @response.status=422
+    @body = {error:"feed url is invalid."}
+    return yield next
+
+  # init config
+  config.interval=28800*1000
+  config.disabled=false
 
   lf=new Lastfeed(config)
 
-  client.set lf.getConfigKey(),JSON.stringify(config)
+  # console.log lf.getProviderId
+
+  client.set lf.feedConfigKey,JSON.stringify(config)
 
   console.log "set config done"
-  @body=lf.getConfigKey()
+  @body=lf.feedId
 
 
-module.exports.get = (pid,next)->
+module.exports.get = (fid,next)->
   yield next if 'GET' isnt @method
 
-  console.log "provider id:#{pid}"
+  # console.log "provider id:#{fid}"
 
-  feed = yield getFeedByProviderId(pid)
+  feed = yield getFeedByFeedId(fid)
+
+  if feed is null
+    @response.status = 404
+    @body = {error:"feed not found."}
+    return yield next
+
+  # console.log "render feed"
+  # console.log feed
 
   @response.type='application/rss+xml'
   @body = yield render('ameblo',feed)

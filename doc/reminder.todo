@@ -15,3 +15,24 @@
        实现方便
      Con:
        feed更新后 重新抓取 开销未知
+
+
+ ☐ feeds list
+   ☐ http://feedblog.ameba.jp/rss/ameblo/ieirileo/rss20.xml
+     feedblog-ameba-jp-rss-ameblo-ieirileo-rss20-xml
+
+   ☐ http://www.echojs.com/rss
+     聚合站点 暂不实现全文抓取
+   ☐ http://howtonode.org/feed.xml
+
+   ☐ http://www.dotblogs.com.tw/regionbbs/Rss.aspx
+     www-dotblogs-com-tw-regionbbs-Rss-aspx
+
+   ☐ http://feeds.feedburner.com/theeffectiveengineer
+     停止更新
+
+   ☐ http://a-chien.blogspot.com/feeds/posts/default
+     被墙 无法测试
+
+   ☐ http://blog.sina.com.cn/rss/1049198655.xml
+
