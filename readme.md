@@ -8,10 +8,6 @@
 该程序需要 `redis` 以及 `--harmony` 参数运行nodejs
 
 ```
-# 启动 feed-miner 用于抓取rss原文
-node --harmony src/feed-miner
-
-# 启动 last-server 用于rss生成 和feed配置
 node --harmony src/last-server
 ```
 
