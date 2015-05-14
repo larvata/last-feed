@@ -13,6 +13,7 @@ Lastfeed = (function() {
   function Lastfeed(config) {
     var i, len, parser;
     this.config = config;
+    this.config.isStop = false;
     this.providerId = url.parse(this.config.url).host;
     this.feedId = this.config.url.replace(/^http:\/\//, '').replace(/[\/|\.]/g, '-');
     this.feedCacheKey = "feed:cache:" + this.feedId;
@@ -30,6 +31,11 @@ Lastfeed = (function() {
       throw new Error("Cant found parser for " + this.providerId);
     }
   }
+
+  Lastfeed.prototype.stop = function() {
+    this.config.isStop = true;
+    return console.log("set stop: " + this.config.url);
+  };
 
   return Lastfeed;
 

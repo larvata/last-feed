@@ -6,6 +6,7 @@ providerIdMatch =(parserId,providerId)->
 
 class Lastfeed
   constructor: (@config) ->
+    @config.isStop=false
 
     @providerId = url.parse(@config.url).host
     @feedId= @config.url.replace(/^http:\/\//,'').replace(/[\/|\.]/g,'-')
@@ -23,6 +24,10 @@ class Lastfeed
     if parser is null
       throw new Error("Cant found parser for #{@providerId}")
     # console.log @parser
+
+  stop:()->
+    @config.isStop=true
+    console.log "set stop: #{@config.url}"
 
 module.exports=Lastfeed
 

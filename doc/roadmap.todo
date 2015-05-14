@@ -1,5 +1,7 @@
- ☐ 合并 web-server 和 feed-miner
+ ✔ 合并 web-server 和 feed-miner @done (15-05-14 12:16)
 
- ☐ 完成web前端 feed配置页面
+ ✔ 完成web前端 feed配置页面 @done (15-05-14 13:02)
 
- ☐ feed-miner 支持redis改动侦听 实现运行中修改 feed config
+ ✔ feed-miner 支持redis改动侦听 实现运行中修改 feed config @done (15-05-14 12:16)
+
+ ✔ 异常检测 创建last-exception 包裹js的异常对象 扩展字段提示具体出错位置 @done (15-05-14 12:16)

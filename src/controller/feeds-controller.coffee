@@ -8,28 +8,16 @@ fs= require 'mz/fs'
 
 Lastfeed= require('../lib/lastfeed')
 
+ConfigManager= require('../lib/configManager')
+configManager=new ConfigManager()
+
 validator = require 'validator'
-
-
-# getFeedByProviderId=(pid)->
-#   new Promise (resolve,reject)->
-#     pid = "feed:cache:#{pid}"
-#     client.get pid,(err,reply)->
-#       if err?
-#         reject err
-#       else
-#         if reply?
-#           try
-#             feed = JSON.parse(reply)
-#             resolve feed
-#           catch e
-#             reject e
-#         else
-#           reject new Error("Unexpected pid: #{pid}")
 
 getFeedByFeedId=(fid)->
   fid="feed:cache:#{fid}"
   value=yield client.get(fid)
+  # console.log fid
+  # console.log value
 
   try
     feed= JSON.parse(value)
@@ -57,11 +45,10 @@ module.exports.add = (next)->
 
   # init config
   config.interval=28800*1000
+  config.interval=60000
   config.disabled=false
 
   lf=new Lastfeed(config)
-
-  # console.log lf.getProviderId
 
   client.set lf.feedConfigKey,JSON.stringify(config)
 
@@ -72,8 +59,6 @@ module.exports.add = (next)->
 module.exports.get = (fid,next)->
   yield next if 'GET' isnt @method
 
-  # console.log "provider id:#{fid}"
-
   feed = yield getFeedByFeedId(fid)
 
   if feed is null
@@ -81,15 +66,18 @@ module.exports.get = (fid,next)->
     @body = {error:"feed not found."}
     return yield next
 
-  # console.log "render feed"
-  # console.log feed
-
   @response.type='application/rss+xml'
   @body = yield render('ameblo',feed)
 
 
+module.exports.getAll = ()->
+  yield next if 'GET' isnt @method
 
+  configs = yield configManager.getAll()
 
+  lastfeeds= configs.map (c)->
+    return new Lastfeed(c)
 
+  @body=lastfeeds
 
 
