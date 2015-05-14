@@ -50,7 +50,6 @@ module.exports.add = function*(next) {
     return (yield next);
   }
   config.interval = 28800 * 1000;
-  config.interval = 60000;
   config.disabled = false;
   lf = new Lastfeed(config);
   client.set(lf.feedConfigKey, JSON.stringify(config));

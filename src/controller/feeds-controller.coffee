@@ -45,7 +45,6 @@ module.exports.add = (next)->
 
   # init config
   config.interval=28800*1000
-  config.interval=60000
   config.disabled=false
 
   lf=new Lastfeed(config)
