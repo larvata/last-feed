@@ -10,7 +10,7 @@ Lastfeed = require('./lastfeed');
 
 ConfigManager = require('./configManager');
 
-FeedManager = require('./FeedManager');
+FeedManager = require('./feedManager');
 
 feedManager = new FeedManager();
 
