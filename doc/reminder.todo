@@ -1,20 +1,61 @@
- ☐ 缓存策略
-   ☐ 方案一: 缓存已经加载过的post
-     数据结构使用 LIST
-     postlistKey格式 "post:cached:{provider}"
-     插入缓存 LPUSH postlistKey post
-     删除旧项目 LTRIM postlistKey 0 9
-     获取 LRANGE postlistKey 0 -1
-     Pro:
-       删除旧项目方便
-     Con:
-       判定缓存中存在项困难 需要用结构包裹post正文数据并且加载后才能识别
-   ☐ 方案二: feed有变动后 重新抓取post
-     Pro:
-       不需要额外对post缓存 抓取数据后 直接缓存有全文的feed
-       实现方便
-     Con:
-       feed更新后 重新抓取 开销未知
+已知问题
+ ☐ 添加feed config后不会直接抓取 要等cooldown结束才开始
+
+ ☐ 实现 fetcher
+   实现一个通用 fetcher 用于普通rss-feed的抓取
+   针对特定站点写指定fetcher
+     例如 `简书` `medium`
+
+   关于medium:
+     访问文章的方式:
+       官方栏目:
+         top-stories:
+           https://medium.com/top-stories/may-18-2015
+           每天更新内容可通过url日期访问 为空则当前内容
+         stuff-picks:
+           https://medium.com/
+           似乎持续更新
+       主题tag:
+         https://medium.com/tag/{tagId}/latest
+       特定用户:
+         https://medium.com/@{userId}/latest
+         https://medium.com/@{userId}/recommended
+
+   关于简书:
+     访问文章的方式:
+       特定用户:
+         http://www.jianshu.com/users/xitXTg/latest_articles
+       文集:
+         http://www.jianshu.com/notebooks/87096/latest
+       分类/标签:
+         http://www.jianshu.com/recommendations/notes?category_id=33&_=1432176551858
+
+   config的变更:
+     {
+       url: 更新地址
+       interval: 更新间隔
+       disabled: 禁用状态 不更新
+       isStop: 由于config被移除 停止更新
+       provider: common/medium/jianshu
+       provider_config:{
+         /* medium config */
+         feed_type: tag
+         tagId: cooking
+         userId: ''
+       }
+     }
+
+
+ ☐ 实现 router
+   访问 last-feed 时 目前是通过 {last-feed-host}/feeds/{feed-id} 这样的格式
+   无法满足特定站点的需求
+   目标:
+     {last-feed-host}/feeds/{providerId}/{tagId}/{feedId}
+     例如:
+       {last-feed-host}/feeds/ameblo/default/ieirileo
+       {last-feed-host}/feeds/medium/top-stories/
+
+
 
 
  ☐ feeds list
@@ -37,3 +78,25 @@
 
    ☐ http://blog.sina.com.cn/rss/1049198655.xml
 
+
+
+＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿
+Archive:
+ ✔ 缓存策略 @done (15-05-21 11:02)
+ ✔ 方案一: 缓存已经加载过的post @done (15-05-21 11:03)
+  数据结构使用 LIST
+  postlistKey格式 "post:cached:{provider}"
+  插入缓存 LPUSH postlistKey post
+  删除旧项目 LTRIM postlistKey 0 9
+  获取 LRANGE postlistKey 0 -1
+  Pro
+  删除旧项目方便
+  Con
+  判定缓存中存在项困难 需要用结构包裹post正文数据并且加载后才能识别
+ ✔ 方案二: feed有变动后 重新抓取post @done (15-05-21 11:03)
+  Pro
+  不需要额外对post缓存 抓取数据后 直接缓存有全文的feed
+  实现方便
+  Con
+  feed更新后 重新抓取 开销未知
+  使用方案2
