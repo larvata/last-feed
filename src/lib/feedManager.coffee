@@ -53,7 +53,11 @@ class FeedManager
         feed.articles=[]
 
         req.on 'error',(error)->
-          reject new LastError("request:error",null,error)
+          # sometime raise [ENOTFOUND:getaddrinfo]
+          # resolve empty string on error
+          console.log error.Error
+          resolve ''
+          # reject new LastError("request:error",null,error)
 
         req.on 'response',(resp)->
           if resp.statusCode isnt 200
@@ -76,7 +80,17 @@ class FeedManager
 
 
     feed=yield promiseGetFeed(lastfeed)
+    
+    # error on fetch/parse feed
+    if feed is ''
+      feedUpdated=false
+      return {
+        feed
+        feedUpdated
+      }
 
+
+    # no error! continue manipulate feed data
     feedText=JSON.stringify(feed)
     cachedFeedText=yield promiseGetCachedRawFeed(lastfeed)
 

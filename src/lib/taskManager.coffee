@@ -32,18 +32,15 @@ class TaskManager
   lastfeedTask:(lastfeed)->
 
     value = yield feedManager.checkFeedUpdates(lastfeed)
-    lastfeed.feed=value.feed
     lastfeed.feedUpdated=value.feedUpdated
 
-    rawFeedText=JSON.stringify(lastfeed.feed)
-    console.log "feed updated: #{lastfeed.feedUpdated}"
-
     if lastfeed.feedUpdated
-
+      console.log "feed updated."
+      lastfeed.feed=value.feed
+      rawFeedText=JSON.stringify(lastfeed.feed)
       value= yield feedManager.completeFeedPosts(lastfeed)
       feedManager.setCachedFeed(lastfeed.feedCacheKey,value)
       feedManager.setCachedFeed(lastfeed.feedRawKey,rawFeedText)
-      console.log "completeFeedPosts"
 
     return lastfeed
 
@@ -70,13 +67,9 @@ class TaskManager
 
   addTask:(taskConfig)=>
     console.log "addTask"
-    # console.log taskConfig
-    # console.log "sdf "
-    # console.log taskPool
     lastfeed= new Lastfeed(taskConfig)
-
     taskPool[lastfeed.feedConfigKey]=lastfeed
-    # console.log taskPool
+
     @doTask(lastfeed)
 
   removeTask:(key)->
