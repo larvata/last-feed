@@ -50,7 +50,11 @@ class TaskManager
     co ()=>
       until lastfeed.config.isStop
 
-        yield @lastfeedTask(lastfeed)
+        try
+          yield @lastfeedTask(lastfeed)
+        catch e
+          console.log e
+        
         console.log "sleep #{lastfeed.config.interval}: #{lastfeed.feedId}"
         yield sleep(lastfeed.config.interval)
 
@@ -61,9 +65,9 @@ class TaskManager
       console.log "sub then"
       console.log c
 
-    .catch (err)->
-      console.log "sub err"
-      console.log err
+    # .catch (err)->
+    #   console.log "sub err"
+    #   console.log err
 
   addTask:(taskConfig)=>
     console.log "addTask"

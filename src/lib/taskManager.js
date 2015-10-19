@@ -59,8 +59,14 @@ TaskManager = (function() {
   TaskManager.prototype.doTask = function(lastfeed) {
     return co((function(_this) {
       return function*() {
+        var e;
         while (!lastfeed.config.isStop) {
-          (yield _this.lastfeedTask(lastfeed));
+          try {
+            (yield _this.lastfeedTask(lastfeed));
+          } catch (_error) {
+            e = _error;
+            console.log(e);
+          }
           console.log("sleep " + lastfeed.config.interval + ": " + lastfeed.feedId);
           (yield sleep(lastfeed.config.interval));
         }
@@ -70,9 +76,6 @@ TaskManager = (function() {
     })(this)).then(function(c) {
       console.log("sub then");
       return console.log(c);
-    })["catch"](function(err) {
-      console.log("sub err");
-      return console.log(err);
     });
   };
 
